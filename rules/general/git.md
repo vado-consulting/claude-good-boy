@@ -20,6 +20,7 @@ Format: `<type>(<scope>): <description>`
 - Body (optional): wrap at 72 chars, explain *why* not *what* — the diff shows what
 - Breaking changes: add `!` after type (`feat!:`) or `BREAKING CHANGE:` in footer
 - Scope is optional but encouraged in larger codebases
+- **Never add `Co-Authored-By` lines or any AI/Claude attribution** — commits must only have the user's name as author
 
 ### Good examples
 ```
