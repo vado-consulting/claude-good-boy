@@ -1,11 +1,16 @@
 ---
 paths:
-  - "frontend/**/*.ts"
-  - "frontend/**/*.html"
-  - "frontend/**/*.scss"
-  - "*/frontend/**/*.ts"
-  - "*/frontend/**/*.html"
-  - "*/frontend/**/*.scss"
+  - "**/*.component.ts"
+  - "**/*.component.html"
+  - "**/*.component.scss"
+  - "**/*.pipe.ts"
+  - "**/*.directive.ts"
+  - "**/*.module.ts"
+  - "**/*.service.ts"
+  - "**/*.guard.ts"
+  - "**/*.resolver.ts"
+  - "**/*.interceptor.ts"
+  - "**/angular.json"
 ---
 
 # Frontend Conventions — Angular 19 + PrimeNG
