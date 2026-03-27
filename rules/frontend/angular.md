@@ -6,8 +6,6 @@ paths:
   - "*/frontend/**/*.ts"
   - "*/frontend/**/*.html"
   - "*/frontend/**/*.scss"
-  - "**/*.component.ts"
-  - "**/*.component.html"
 ---
 
 # Frontend Conventions — Angular 19 + PrimeNG
@@ -57,7 +55,6 @@ ngOnInit() { this.userService.getUsers().subscribe(u => this.users = u); }
 ## Templates
 
 - **No method calls in templates** — use `computed()`, pipes, or inline expressions
-- **Pipes in `shared/pipes/`** for formatting and CSS class mapping
 - **Const lookup maps** instead of switch/if-else chains
 
 ```html
