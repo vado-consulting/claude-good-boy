@@ -93,19 +93,17 @@ docs/update-api-readme
 
 ## Force Push — MANDATORY
 
-- **Never force-push to any shared branch** — main, master, develop, release/*, hotfix/*
-- **Never force-push to any branch others are working on**
-- If you must rewrite history on your own feature branch: use `--force-with-lease` instead of `--force`
+- **Never force-push. Ever. On any branch.**
+- `git push --force`, `git push --force-with-lease`, and any other force variant are forbidden
+- If you feel you need to force-push, the real solution is a new commit or a different workflow
 
 ```bash
-# Safe — refuses if someone else pushed in the meantime
-git push --force-with-lease origin feat/my-feature
-
-# Dangerous — never use on shared branches
-git push --force origin main   ❌
+❌ git push --force origin feat/my-feature
+❌ git push --force-with-lease origin feat/my-feature
+❌ git push -f origin main
 ```
 
-`--force-with-lease` checks that the remote hasn't changed since your last fetch. It protects teammates from having their work overwritten.
+If history needs to be corrected, use `git revert` to create a new commit that undoes the change — never rewrite what's already on the remote.
 
 ---
 
