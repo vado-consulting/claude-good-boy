@@ -33,6 +33,15 @@ fi
 # ── 2. Inject SessionStart hook into ~/.claude/settings.json ─────────────────
 mkdir -p "$(dirname "$SETTINGS_FILE")"
 
+if ! command -v python3 &>/dev/null; then
+  echo ""
+  echo "  ⚠ python3 not found — skipping hook installation."
+  echo "  To finish setup manually, add this to ~/.claude/settings.json:"
+  echo "    hooks > SessionStart > command:"
+  echo "    cd \"\$HOME/.claude/rules/shared\" && git pull --ff-only 2>/dev/null || true"
+  exit 0
+fi
+
 python3 - <<PYEOF
 import json, os
 

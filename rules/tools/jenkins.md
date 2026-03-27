@@ -1,4 +1,3 @@
----
 # Jenkins CLI
 
 The Jenkins CLI is available as `jk` at `~/bin/jk.exe`.

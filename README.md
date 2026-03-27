@@ -90,5 +90,6 @@ PRs are welcome for new stacks, frameworks, and tools. If you've written rules t
 
 ```bash
 rm -rf ~/.claude/rules/shared
-# Then remove the SessionStart hook from ~/.claude/settings.json
 ```
+
+Then open `~/.claude/settings.json` and remove the entry from `hooks.SessionStart` whose `command` contains `claude-good-boy` or `rules/shared`.

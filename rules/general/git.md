@@ -1,4 +1,3 @@
----
 # Git Conventions
 
 ## Commit Messages — Conventional Commits
