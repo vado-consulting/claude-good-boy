@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/.do-not-load"
+---
+
 # Contributing to claude-good-boy
 
 Thanks for your interest in contributing! This repo is meant to grow into a broad library of Claude Code rules covering as many stacks as possible, and contributions of new rule files are very welcome. If you have hard-won conventions for a language, framework, or tool that you'd like to share, this is the right place.

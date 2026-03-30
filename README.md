@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/.do-not-load"
+---
+
 # claude-good-boy
 
 **Shared Claude Code rules that install in one command and update themselves.**
