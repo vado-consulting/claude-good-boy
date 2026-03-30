@@ -35,3 +35,4 @@ This applies to both `dependencies` and `devDependencies`.
 
 - Never run `npm audit fix --force` without asking — it can silently break APIs
 - Review `npm audit` output and ask before acting on it
+- Never run `npm install --force` without explicit user request — it bypasses lockfile integrity and can introduce unexpected versions
