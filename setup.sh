@@ -1,92 +1,105 @@
 #!/usr/bin/env bash
-# claude-good-boy — shared Claude Code rules installer
+# claude-good-boy — shared Claude Code rules & skills installer
 # Usage: bash <(curl -s https://raw.githubusercontent.com/vado-consulting/claude-good-boy/main/setup.sh)
 #
 # What this does:
-#   1. Clones the claude-good-boy rules repo to ~/.claude/rules/shared/
+#   1. Clones the claude-good-boy repo to ~/.claude/claude-good-boy/
 #      (or pulls the latest if already cloned)
-#   2. Injects a SessionStart hook into ~/.claude/settings.json
-#      so rules auto-update on every Claude Code session start
+#   2. Ensures the SessionStart hook is registered in settings.json
+#   3. Runs migrate.sh to apply any pending one-time migrations
+#   4. Runs sync.sh to copy rules and skills into Claude Code's discovery paths
 #
 # Idempotent: safe to run multiple times.
 
 set -e
 
 REPO_URL="https://github.com/vado-consulting/claude-good-boy"
-RULES_DIR="$HOME/.claude/rules/shared"
+REPO_DIR="$HOME/.claude/claude-good-boy"
+OLD_DIR="$HOME/.claude/rules/shared"
 SETTINGS_FILE="$HOME/.claude/settings.json"
-HOOK_COMMAND='cd "$HOME/.claude/rules/shared" && git pull --ff-only 2>/dev/null || true'
+HOOK_CMD='cd "$HOME/.claude/claude-good-boy" && git pull --ff-only 2>/dev/null; bash sync.sh; bash migrate.sh || true'
 
 echo "🐶 claude-good-boy setup"
 echo "──────────────────────────────────────"
 
-# ── 1. Clone or update the rules repo ────────────────────────────────────────
-if [ -d "$RULES_DIR/.git" ]; then
-  echo "→ Updating existing rules..."
-  git -C "$RULES_DIR" pull --ff-only
-else
-  echo "→ Cloning rules into $RULES_DIR..."
-  mkdir -p "$(dirname "$RULES_DIR")"
-  git clone "$REPO_URL" "$RULES_DIR"
+# ── 0. Migrate from old install location if needed ──────────────────────────
+if [ -d "$OLD_DIR/.git" ] && [ ! -d "$REPO_DIR/.git" ]; then
+  echo "→ Migrating from old location ($OLD_DIR)..."
+  mkdir -p "$(dirname "$REPO_DIR")"
+  mv "$OLD_DIR" "$REPO_DIR"
+  echo "  Moved to $REPO_DIR"
 fi
 
-# ── 2. Inject SessionStart hook into ~/.claude/settings.json ─────────────────
+# ── 1. Clone or update the repo ────────────────────────────────────────────
+if [ -d "$REPO_DIR/.git" ]; then
+  echo "→ Updating existing repo..."
+  git -C "$REPO_DIR" pull --ff-only
+else
+  echo "→ Cloning repo into $REPO_DIR..."
+  mkdir -p "$(dirname "$REPO_DIR")"
+  git clone "$REPO_URL" "$REPO_DIR"
+fi
+
+# ── 2. Ensure SessionStart hook exists ──────────────────────────────────────
 mkdir -p "$(dirname "$SETTINGS_FILE")"
 
-if ! command -v python3 &>/dev/null; then
-  echo ""
-  echo "  ⚠ python3 not found — skipping hook installation."
-  echo "  To finish setup manually, add this to ~/.claude/settings.json:"
-  echo "    hooks > SessionStart > command:"
-  echo "    cd \"\$HOME/.claude/rules/shared\" && git pull --ff-only 2>/dev/null || true"
-  exit 0
+if [ -f "$SETTINGS_FILE" ] && grep -qF "claude-good-boy" "$SETTINGS_FILE"; then
+  echo "→ SessionStart hook already present"
+else
+  echo "→ Adding SessionStart hook..."
+  if [ ! -f "$SETTINGS_FILE" ] || [ ! -s "$SETTINGS_FILE" ]; then
+    # No settings file — write one from scratch
+    cat > "$SETTINGS_FILE" <<'ENDJSON'
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$HOME/.claude/claude-good-boy\" && git pull --ff-only 2>/dev/null; bash sync.sh; bash migrate.sh || true",
+            "statusMessage": "Syncing claude-good-boy...",
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}
+ENDJSON
+    echo "  Created $SETTINGS_FILE with hook"
+  else
+    # Settings file exists but doesn't have our hook — show manual instructions
+    echo ""
+    echo "  ⚠ settings.json exists but doesn't contain the claude-good-boy hook."
+    echo "  Please add this to your ~/.claude/settings.json under hooks.SessionStart:"
+    echo ""
+    echo "  {"
+    echo "    \"hooks\": [{"
+    echo "      \"type\": \"command\","
+    echo "      \"command\": \"cd \\\"\$HOME/.claude/claude-good-boy\\\" && git pull --ff-only 2>/dev/null; bash sync.sh; bash migrate.sh || true\","
+    echo "      \"statusMessage\": \"Syncing claude-good-boy...\","
+    echo "      \"async\": true"
+    echo "    }]"
+    echo "  }"
+    echo ""
+  fi
 fi
 
-python3 - <<PYEOF
-import json, os
+# ── 3. Run migrations ──────────────────────────────────────────────────────
+echo "→ Running migrations..."
+bash "$REPO_DIR/migrate.sh"
 
-settings_file = os.path.expanduser("~/.claude/settings.json")
-hook_command = 'cd "\$HOME/.claude/rules/shared" && git pull --ff-only 2>/dev/null || true'
-
-settings = {}
-if os.path.exists(settings_file):
-    with open(settings_file) as f:
-        try:
-            settings = json.load(f)
-        except json.JSONDecodeError:
-            print("  Warning: could not parse existing settings.json — starting fresh")
-
-settings.setdefault("hooks", {})
-settings["hooks"].setdefault("SessionStart", [])
-
-existing_commands = [
-    h.get("command", "")
-    for entry in settings["hooks"]["SessionStart"]
-    for h in entry.get("hooks", [])
-]
-
-if hook_command in existing_commands:
-    print("→ Auto-update hook already present — nothing to do.")
-else:
-    settings["hooks"]["SessionStart"].append({
-        "hooks": [{
-            "type": "command",
-            "command": hook_command,
-            "async": True,
-            "statusMessage": "Updating shared rules..."
-        }]
-    })
-    with open(settings_file, "w") as f:
-        json.dump(settings, f, indent=2)
-    print(f"→ Auto-update hook added to {settings_file}")
-PYEOF
+# ── 4. Sync rules and skills ───────────────────────────────────────────────
+echo "→ Syncing rules and skills..."
+bash "$REPO_DIR/sync.sh"
 
 echo ""
-echo "✓ Done! claude-good-boy rules are ready."
+echo "✓ Done! claude-good-boy rules and skills are ready."
 echo ""
-echo "  Rules load automatically in every Claude Code session."
-echo "  They update silently in the background on each session start."
+echo "  Rules and skills sync automatically on every Claude Code session start."
+echo "  Infrastructure changes apply automatically via migrations."
 echo ""
 echo "  Personal overrides: add .md files to ~/.claude/rules/ (outside shared/)"
-echo "  Uninstall:          rm -rf ~/.claude/rules/shared"
+echo "  Uninstall:          rm -rf ~/.claude/claude-good-boy ~/.claude/rules/shared ~/.claude/skills/shared"
 echo "──────────────────────────────────────"
