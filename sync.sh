@@ -7,7 +7,6 @@ set -e
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 RULES_TARGET="$HOME/.claude/rules/shared"
-SKILLS_TARGET="$HOME/.claude/skills/shared"
 
 # ── Sync rules ──────────────────────────────────────────────────────────────
 if [ -d "$REPO_DIR/rules" ]; then
@@ -17,8 +16,20 @@ if [ -d "$REPO_DIR/rules" ]; then
 fi
 
 # ── Sync skills ─────────────────────────────────────────────────────────────
+# Skills must be one level deep in ~/.claude/skills/ to be discovered.
+# We prefix shared skills with "shared--" so they can be cleanly removed
+# without touching personal skills.
+SKILLS_DIR="$HOME/.claude/skills"
+SKILLS_PREFIX="shared--"
+
 if [ -d "$REPO_DIR/skills" ]; then
-  rm -rf "$SKILLS_TARGET"
-  mkdir -p "$(dirname "$SKILLS_TARGET")"
-  cp -r "$REPO_DIR/skills" "$SKILLS_TARGET"
+  mkdir -p "$SKILLS_DIR"
+  # Remove previously synced shared skills
+  find "$SKILLS_DIR" -maxdepth 1 -type d -name "${SKILLS_PREFIX}*" -exec rm -rf {} +
+  # Copy each skill with the prefix
+  for skill_dir in "$REPO_DIR/skills"/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name=$(basename "$skill_dir")
+    cp -r "$skill_dir" "$SKILLS_DIR/${SKILLS_PREFIX}${skill_name}"
+  done
 fi

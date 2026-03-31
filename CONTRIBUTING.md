@@ -13,13 +13,16 @@ Thanks for your interest in contributing! This repo is meant to grow into a broa
 
 ```
 claude-good-boy/
-├── rules/
-│   ├── general/     # Universal rules (git, code style, etc.)
-│   ├── backend/     # Backend language/framework rules
-│   ├── frontend/    # Frontend framework rules
-│   └── tools/       # CLI tools and dev tooling
-├── setup.sh         # One-liner installer
-└── CONTRIBUTING.md
+├── rules/               # Rule markdown files (synced to ~/.claude/rules/shared/)
+│   ├── general/         # Universal rules (git, code style, etc.)
+│   ├── backend/         # Backend language/framework rules
+│   ├── frontend/        # Frontend framework rules
+│   └── tools/           # CLI tools and dev tooling
+├── skills/              # Shared slash commands (synced to ~/.claude/skills/shared--*/)
+├── migrations/          # Numbered one-time migration scripts
+├── setup.sh             # First-time installer
+├── sync.sh              # Every-session file sync
+└── migrate.sh           # Migration runner
 ```
 
 ---

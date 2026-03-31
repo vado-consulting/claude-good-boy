@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-A collection of Claude Code rules and skills that install to `~/.claude/claude-good-boy/` and self-update via a SessionStart hook. Rules are copied to `~/.claude/rules/shared/` and skills to `~/.claude/skills/shared/` on every session start.
+A collection of Claude Code rules and skills that install to `~/.claude/claude-good-boy/` and self-update via a SessionStart hook. Rules are copied to `~/.claude/rules/shared/` and skills to `~/.claude/skills/shared--*/` on every session start.
 
 ## Directory structure
 
@@ -14,7 +14,7 @@ A collection of Claude Code rules and skills that install to `~/.claude/claude-g
 | `rules/backend/` | Server-side language/framework rules |
 | `rules/frontend/` | Client-side framework rules |
 | `rules/tools/` | CLI tools and dev tooling rules |
-| `skills/` | Shared slash commands (copied to `~/.claude/skills/shared/`) |
+| `skills/` | Shared slash commands (copied to `~/.claude/skills/shared--*/`) |
 | `migrations/` | Numbered one-time migration scripts (Flyway-style) |
 
 ## Rule file conventions
@@ -42,7 +42,7 @@ paths:
 
 ## Adding skills
 
-Place a `SKILL.md` file in `skills/<skill-name>/SKILL.md`. It will be synced to `~/.claude/skills/shared/<skill-name>/SKILL.md` and discoverable as a slash command.
+Place a `SKILL.md` file in `skills/<skill-name>/SKILL.md`. It will be synced to `~/.claude/skills/shared--<skill-name>/SKILL.md` and discoverable as a slash command. The `shared--` prefix keeps shared skills separate from personal ones.
 
 ## Adding migrations
 
